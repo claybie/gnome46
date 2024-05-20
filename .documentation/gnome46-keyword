@@ -106,3 +106,4 @@
 =x11-wm/mutter-46.1
 # Addional packages not in overlay that need to be unmasked.
 >=gui-libs/gtk-4.13.6
+>=gui-libs/libadwaita-1.5_alpha
