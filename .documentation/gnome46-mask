@@ -1,0 +1,3 @@
+# Place this file in /etc/portage/package.mask/ for Gnome 46.
+
+=media-video/pipewire-1.0.6 
