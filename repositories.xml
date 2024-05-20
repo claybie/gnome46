@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<repositories version="1.0">
+  <repo quality="experimental" status="unofficial">
+    <name>gnome46</name>
+      <description lang="en">Overlay for Gnome 46 made from Guillermo Joandet's ebuilds.</description>
+        <homepage>https://github.com/claybie/gnome46</homepage>
+        <owner type="person">
+            <name>claybie</name>
+            <email>claybie@claybie.org</email>
+        </owner>
+        <source type="git">git://github.com/claybie/gnome46.git</source>
+        <feed>https://github.com/claybie/gnome46/commits/master.atom</feed>
+  </repo>
+</repositories>
