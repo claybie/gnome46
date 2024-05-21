@@ -13,7 +13,7 @@ SRC_URI+=" https://dev.gentoo.org/~mattst88/distfiles/${PN}-gentoo-logo-dark.svg
 # Logo is CC-BY-SA-2.5
 LICENSE="GPL-2+ CC-BY-SA-2.5"
 SLOT="2"
-IUSE="+bluetooth +cups debug elogind +gnome-online-accounts +ibus input_devices_wacom kerberos networkmanager systemd test wayland"
+IUSE="+bluetooth +cups debug elogind +gnome-online-accounts +ibus input_devices_wacom networkmanager systemd test wayland"
 RESTRICT="!test? ( test )"
 REQUIRED_USE="
 	^^ ( elogind systemd )
@@ -24,7 +24,6 @@ KEYWORDS="~amd64 ~arm ~arm64 ~loong ~riscv ~x86"
 # meson.build depends on python unconditionally
 BDEPEND="${PYTHON_DEPS}"
 
-# kerberos unfortunately means mit-krb5; build fails with heimdal
 # display panel requires colord and gnome-settings-daemon[colord]
 # wacom panel requires gsd-enums.h from gsd at build time, probably also runtime support
 # printer panel requires cups and smbclient (the latter is not patched yet to be separately optional)
@@ -66,7 +65,6 @@ DEPEND="
 	)
 	bluetooth? ( net-wireless/gnome-bluetooth:3= )
 	input_devices_wacom? ( >=dev-libs/libwacom-1.4:= )
-	kerberos? ( app-crypt/mit-krb5 )
 
 	x11-libs/cairo[glib]
 	>=x11-libs/colord-gtk-0.3.0:=
@@ -168,7 +166,6 @@ src_configure() {
 		-Ddocumentation=true # manpage
 		-Dgoa=$(usex gnome-online-accounts enabled disabled)
 		$(meson_use ibus)
-		-Dkerberos=$(usex kerberos enabled disabled)
 		$(meson_use networkmanager network_manager)
 		-Dprivileged_group=wheel
 		-Dsnap=false
