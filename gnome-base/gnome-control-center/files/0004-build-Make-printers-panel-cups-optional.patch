@@ -1,0 +1,120 @@
+From aaca46692942d5a1caa7a3f44be024dc123d8e0d Mon Sep 17 00:00:00 2001
+From: Guillermo Joandet <gjoandet@gmail.com>
+Date: Sat, 12 Aug 2023 18:11:11 -0300
+Subject: [PATCH] 0004-build-Make-printers-panel-cups-optional.patch
+
+---
+ meson.build             | 13 ++++++++++---
+ meson_options.txt       |  1 +
+ panels/meson.build      |  5 ++++-
+ shell/cc-panel-loader.c |  5 ++++-
+ tests/meson.build       |  4 +++-
+ 5 files changed, 22 insertions(+), 6 deletions(-)
+
+diff --git a/meson.build b/meson.build
+index 6d4617800..f83bc82fa 100644
+--- a/meson.build
++++ b/meson.build
+@@ -198,9 +198,11 @@ foreach polkit_file: polkit_files
+ endforeach
+ 
+ # Check for CUPS 1.4 or newer
+-cups_dep = dependency('cups', version : '>= 1.4', required: false)
+-assert(cups_dep.found(), 'CUPS 1.4 or newer not found')
++cups_dep = dependency('cups', version : '>= 1.4', required: get_option('cups'))
++enable_cups = cups_dep.found()
++have_cups_httpconnect2 = false
+ 
++if enable_cups
+ # https://bugzilla.gnome.org/show_bug.cgi?id=696766
+ cups_cflags = []
+ if cups_dep.version().version_compare('>= 1.6')
+@@ -217,8 +219,13 @@ foreach header: check_headers
+   assert(cc.has_header(header[1], args: cups_cflags), 'CUPS headers not found: ' + header[1])
+ endforeach
+ 
++have_cups_httpconnect2 = cc.has_function('httpConnect2', dependencies: cups_dep)
++endif
++
++config_h.set('BUILD_PRINTERS', enable_cups,
++             description: 'Define to 1 to build the Printers panel')
+ config_h.set10('HAVE_CUPS_HTTPCONNECT2',
+-               cc.has_function('httpConnect2', dependencies: cups_dep),
++               have_cups_httpconnect2,
+                description: 'Define if httpConnect2() is available in CUPS')
+ 
+ # IBus support
+diff --git a/meson_options.txt b/meson_options.txt
+index 55d1e7c78..e5acc8ef9 100644
+--- a/meson_options.txt	2024-03-25 01:09:41.688677985 -0300
++++ b/meson_options.txt	2024-03-25 01:09:26.335382046 -0300
+@@ -1,5 +1,6 @@
+ option('bluetooth', type: 'boolean', value: true, description: 'build with Bluetooth support')
++option('cups', type: 'feature', value: 'auto', description: 'build with CUPS support (printer panel)')
+ option('deprecated-declarations', type: 'feature', value: 'disabled', description: 'build with deprecated declaration warnings')
+ option('documentation', type: 'boolean', value: false, description: 'build documentation')
+ option('location-services', type: 'feature', value: 'disabled', description: 'build with location services')
+ option('goa', type: 'feature', value: 'auto', description: 'build with gnome-online-accounts support')
+diff --git a/panels/meson.build b/panels/meson.build
+index 8fb6be865..52bdb775d 100644
+--- a/panels/meson.build
++++ b/panels/meson.build
+@@ -13,7 +13,6 @@ panels = [
+   'multitasking',
+   'notifications',
+   'power',
+-  'printers',
+   'privacy',
+   'region',
+   'removable-media',
+@@ -24,6 +23,10 @@ panels = [
+   'user-accounts',
+ ]
+ 
++if enable_cups
++  panels += ['printers']
++endif
++
+ if enable_goa
+   panels += ['online-accounts']
+ endif
+diff --git a/shell/cc-panel-loader.c b/shell/cc-panel-loader.c
+index f1b222d14..a0561e733 100644
+--- a/shell/cc-panel-loader.c	2024-03-25 01:01:43.209854318 -0300
++++ b/shell/cc-panel-loader.c	2024-03-25 01:00:26.003380474 -0300
+@@ -51,7 +51,9 @@
+ extern GType cc_online_accounts_panel_get_type (void);
+ #endif /* BUILD_GOA */
+ extern GType cc_power_panel_get_type (void);
++#ifdef BUILD_PRINTERS
+ extern GType cc_printers_panel_get_type (void);
++#endif /* BUILD_PRINTERS */
+ extern GType cc_privacy_panel_get_type (void);
+ extern GType cc_search_panel_get_type (void);
+ extern GType cc_sharing_panel_get_type (void);
+@@ -105,7 +107,9 @@
+   PANEL_TYPE("online-accounts",  cc_online_accounts_panel_get_type,      NULL),
+ #endif
+   PANEL_TYPE("power",            cc_power_panel_get_type,                NULL),
++#ifdef BUILD_PRINTERS
+   PANEL_TYPE("printers",         cc_printers_panel_get_type,             NULL),
++#endif
+   PANEL_TYPE("privacy",          cc_privacy_panel_get_type,              NULL),
+   PANEL_TYPE("search",           cc_search_panel_get_type,               NULL),
+   PANEL_TYPE("sharing",          cc_sharing_panel_get_type,              NULL),
+diff --git a/tests/meson.build b/tests/meson.build
+index 568fb349a..1a70891b6 100644
+--- a/tests/meson.build	2024-03-25 01:05:13.509334089 -0300
++++ b/tests/meson.build	2024-03-25 01:04:58.342704726 -0300
+@@ -9,5 +9,7 @@
+   subdir('interactive-panels')
+ endif
+ 
+-subdir('printers')
++if enable_cups
++  subdir('printers')
++endif
+ subdir('keyboard')
+-- 
+2.41.0
+
