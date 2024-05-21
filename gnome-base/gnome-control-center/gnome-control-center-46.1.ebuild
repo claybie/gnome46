@@ -8,7 +8,6 @@ inherit flag-o-matic gnome.org gnome2-utils meson python-any-r1 virtualx xdg
 
 DESCRIPTION="GNOME's main interface to configure various aspects of the desktop"
 HOMEPAGE="https://gitlab.gnome.org/GNOME/gnome-control-center"
-SRC_URI+=" https://github.com/claybie/gnome46/raw/master/gnome-base/gnome-control-center/${PN}-46.1-patchset.tar.xz"
 SRC_URI+=" https://dev.gentoo.org/~mattst88/distfiles/${PN}-gentoo-logo.svg"
 SRC_URI+=" https://dev.gentoo.org/~mattst88/distfiles/${PN}-gentoo-logo-dark.svg"
 # Logo is CC-BY-SA-2.5
@@ -136,16 +135,6 @@ BDEPEND="${PYTHON_DEPS}
 		x11-apps/setxkbmap
 	)
 "
-
-PATCHES=(
-	# Patches from gnome-43 branch
-	# Makes some panels and dependencies optional
-	# https://bugzilla.gnome.org/686840, 697478, 700145
-	# Fix some absolute paths to be appropriate for Gentoo
-	"${WORKDIR}"/patches/
-	# misc: Fix incompatible type warnings
-	#WIP "${FILESDIR}"/45.2-fix_incompatible_type_warnings.patch
-)
 
 python_check_deps() {
 	use test || return 0
